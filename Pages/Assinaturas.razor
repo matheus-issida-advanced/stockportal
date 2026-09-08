@@ -1,0 +1,87 @@
+@page "/assinaturas"
+@inject IStockDataProvider DataProvider
+
+<h2 class="section-title" style="margin-top:0">Assinaturas</h2>
+
+<div style="margin-bottom: 16px; display:flex; gap: 12px; align-items:center;">
+    <input class="search-box" placeholder="Buscar por cliente ou nome da assinatura..." @bind="_search" @bind:event="oninput" />
+
+    <select class="search-box" style="width:180px;" @bind="_statusFilter">
+        <option value="">Todos os status</option>
+        <option value="active">Ativas</option>
+        <option value="deleted">Canceladas</option>
+        <option value="suspended">Suspensas</option>
+    </select>
+</div>
+
+@if (_subscriptions is null)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    var filtradas = _subscriptions
+        .Where(s => string.IsNullOrWhiteSpace(_search)
+            || s.CustomerName.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            || s.SubscriptionName.Contains(_search, StringComparison.OrdinalIgnoreCase))
+        .Where(s => string.IsNullOrEmpty(_statusFilter) || s.Status == _statusFilter)
+        .ToList();
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Assinatura</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Qtd.</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in filtradas)
+            {
+                <tr>
+                    <td>@s.CustomerName</td>
+                    <td>@s.SubscriptionName</td>
+                    <td>@s.OfferType</td>
+                    <td>
+                        <span class="badge @StatusBadgeClass(s.Status)">@s.Status</span>
+                        @if (s.IsRenewalSoon)
+                        {
+                            <span class="badge badge-renewal" style="margin-left:6px;">@s.DaysUntilRenewal dias</span>
+                        }
+                    </td>
+                    <td>@s.Quantity</td>
+                    <td>@(s.EndDate.Year < 9000 ? s.EndDate.ToString("dd/MM/yyyy") : "sem vencimento")</td>
+                    <td>@s.RevenuePrice.Value.ToString("C", _ptBr)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p style="color: var(--advanced-gray); margin-top: 12px; font-size: 0.85rem;">
+        @filtradas.Count de @_subscriptions.Count assinaturas
+    </p>
+}
+
+@code {
+    private List<SubscriptionDto>? _subscriptions;
+    private string _search = "";
+    private string _statusFilter = "";
+    private readonly System.Globalization.CultureInfo _ptBr = new("pt-BR");
+
+    protected override async Task OnInitializedAsync()
+    {
+        _subscriptions = await DataProvider.GetSubscriptionsAsync();
+    }
+
+    private static string StatusBadgeClass(string status) => status switch
+    {
+        "active" => "badge-active",
+        "deleted" => "badge-deleted",
+        "suspended" => "badge-suspended",
+        _ => "badge-deleted"
+    };
+}

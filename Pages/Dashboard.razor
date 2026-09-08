@@ -1,0 +1,92 @@
+@page "/"
+@inject IStockDataProvider DataProvider
+
+<h2 class="section-title" style="margin-top:0">Visão geral</h2>
+
+@if (_metrics is null)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    <div class="metric-grid">
+        <div class="metric-card">
+            <div class="metric-label">Clientes ativos</div>
+            <div class="metric-value">@_metrics.TotalClientes</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Assinaturas ativas</div>
+            <div class="metric-value">@_metrics.TotalAssinaturasAtivas</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Receita mensal estimada</div>
+            <div class="metric-value">@_metrics.ReceitaMensalEstimada.ToString("C", _ptBr)</div>
+        </div>
+        <div class="metric-card @(_metrics.RenovacoesProximas60Dias > 0 ? "alert" : "")">
+            <div class="metric-label">Renovações em até 60 dias</div>
+            <div class="metric-value @(_metrics.RenovacoesProximas60Dias > 0 ? "alert-value" : "")">@_metrics.RenovacoesProximas60Dias</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title" style="margin-top:0">Assinaturas ativas por tipo de oferta</div>
+
+        @if (!_metrics.AssinaturasPorTipo.Any())
+        {
+            <p style="color: var(--advanced-gray)">Nenhuma assinatura ativa encontrada.</p>
+        }
+        else
+        {
+            var max = _metrics.AssinaturasPorTipo.Max(kv => kv.Value);
+            @foreach (var item in _metrics.AssinaturasPorTipo)
+            {
+                <div class="bar-row">
+                    <div class="bar-label">@item.Key</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:@((item.Value * 100.0 / max).ToString("0"))%"></div>
+                    </div>
+                    <div class="bar-count">@item.Value</div>
+                </div>
+            }
+        }
+    </div>
+
+    @if (_renewalSoon.Any())
+    {
+        <div class="section-title">Renovações próximas (60 dias)</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Assinatura</th>
+                    <th>Vencimento</th>
+                    <th>Dias restantes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in _renewalSoon)
+                {
+                    <tr>
+                        <td>@s.CustomerName</td>
+                        <td>@s.SubscriptionName</td>
+                        <td>@s.EndDate.ToString("dd/MM/yyyy")</td>
+                        <td><span class="badge badge-renewal">@s.DaysUntilRenewal dias</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private DashboardMetrics? _metrics;
+    private List<SubscriptionDto> _renewalSoon = new();
+    private readonly System.Globalization.CultureInfo _ptBr = new("pt-BR");
+
+    protected override async Task OnInitializedAsync()
+    {
+        _metrics = await DataProvider.GetDashboardMetricsAsync();
+        var subs = await DataProvider.GetSubscriptionsAsync();
+        _renewalSoon = subs.Where(s => s.IsRenewalSoon).OrderBy(s => s.EndDate).ToList();
+    }
+}

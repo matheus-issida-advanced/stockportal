@@ -1,0 +1,66 @@
+@page "/clientes"
+@inject IStockDataProvider DataProvider
+@inject NavigationManager Nav
+
+<h2 class="section-title" style="margin-top:0">Clientes</h2>
+
+<div style="margin-bottom: 16px;">
+    <input class="search-box" placeholder="Buscar por nome ou CNPJ..." @bind="_search" @bind:event="oninput" />
+</div>
+
+@if (_clientes is null)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    var filtrados = _clientes
+        .Where(c => string.IsNullOrWhiteSpace(_search)
+            || c.CompanyName.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            || c.TaxId.Contains(_search, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>CNPJ</th>
+                <th>Cidade/UF</th>
+                <th>Contato</th>
+                <th>Assinaturas ativas</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in filtrados)
+            {
+                <tr @onclick="() => VerDetalhe(c.Id)">
+                    <td>@c.CompanyName</td>
+                    <td>@c.TaxId</td>
+                    <td>@c.City / @c.State</td>
+                    <td>@c.ContactName</td>
+                    <td>@c.ActiveSubscriptionsCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (!filtrados.Any())
+    {
+        <p style="color: var(--advanced-gray); margin-top: 14px;">Nenhum cliente encontrado.</p>
+    }
+}
+
+@code {
+    private List<CustomerDto>? _clientes;
+    private string _search = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _clientes = await DataProvider.GetCustomersAsync();
+    }
+
+    private void VerDetalhe(string customerId)
+    {
+        Nav.NavigateTo($"/clientes/{customerId}");
+    }
+}

@@ -1,0 +1,25 @@
+@inherits LayoutComponentBase
+
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            Portal Stock
+            <small>powered by Advanced</small>
+        </div>
+        <nav>
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">📊 Dashboard</NavLink>
+            <NavLink class="nav-link" href="clientes">🏢 Clientes</NavLink>
+            <NavLink class="nav-link" href="assinaturas">📄 Assinaturas</NavLink>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Stock Distribuidora</h1>
+            <span style="color: var(--advanced-gray); font-size: 0.85rem;">Visão de clientes e assinaturas via CloudCockpit</span>
+        </div>
+        <div class="content">
+            @Body
+        </div>
+    </div>
+</div>
