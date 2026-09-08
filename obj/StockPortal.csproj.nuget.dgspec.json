@@ -1,25 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Matheus Yudi\\Desktop\\Stockportal\\StockPortal\\StockPortal.csproj": {}
+    "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Matheus Yudi\\Desktop\\Stockportal\\StockPortal\\StockPortal.csproj": {
+    "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Matheus Yudi\\Desktop\\Stockportal\\StockPortal\\StockPortal.csproj",
+        "projectUniqueName": "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj",
         "projectName": "StockPortal",
-        "projectPath": "C:\\Users\\Matheus Yudi\\Desktop\\Stockportal\\StockPortal\\StockPortal.csproj",
-        "packagesPath": "C:\\Users\\Matheus Yudi\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Matheus Yudi\\Desktop\\Stockportal\\StockPortal\\obj\\",
+        "projectPath": "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj",
+        "packagesPath": "C:\\Users\\matheus.issida\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Matheus Yudi\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\matheus.issida\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

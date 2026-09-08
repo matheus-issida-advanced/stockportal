@@ -12,45 +12,45 @@ build_property.EntryPointFilePath =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = StockPortal
 build_property.RootNamespace = StockPortal
-build_property.ProjectDir = C:\Users\Matheus Yudi\Desktop\Stockportal\StockPortal\
+build_property.ProjectDir = C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 10.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\Matheus Yudi\Desktop\Stockportal\StockPortal
+build_property.MSBuildProjectDirectory = C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/Matheus Yudi/Desktop/Stockportal/StockPortal/App.razor]
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Matheus Yudi/Desktop/Stockportal/StockPortal/Pages/Assinaturas.razor]
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Pages/Assinaturas.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXNzaW5hdHVyYXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Matheus Yudi/Desktop/Stockportal/StockPortal/Pages/ClienteDetalhe.razor]
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Pages/ClienteDetalhe.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50ZURldGFsaGUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Matheus Yudi/Desktop/Stockportal/StockPortal/Pages/Clientes.razor]
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Pages/Clientes.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Matheus Yudi/Desktop/Stockportal/StockPortal/Pages/Dashboard.razor]
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Pages/Dashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGFzaGJvYXJkLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Matheus Yudi/Desktop/Stockportal/StockPortal/Routes.razor]
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Um91dGVzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Matheus Yudi/Desktop/Stockportal/StockPortal/Shared/MainLayout.razor]
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Shared/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Matheus Yudi/Desktop/Stockportal/StockPortal/_Imports.razor]
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
