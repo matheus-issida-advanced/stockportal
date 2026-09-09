@@ -43,6 +43,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGFzaGJvYXJkLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Pages/Parceirodetalhe.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFyY2Vpcm9kZXRhbGhlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Pages/Parceiros.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFyY2Vpcm9zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/matheus.issida/Documents/GitHub/Plugins Advanced/stockportal/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Um91dGVzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 

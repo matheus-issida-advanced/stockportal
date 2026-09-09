@@ -1,0 +1,77 @@
+@page "/parceiros/{PartnerId}"
+@inject IStockDataProvider DataProvider
+
+<a class="back-link" href="/parceiros">← Voltar para parceiros</a>
+
+@if (_parceiro is null)
+{
+    <p>Parceiro não encontrado.</p>
+}
+else
+{
+    <h2 class="section-title" style="margin-top:0">@_parceiro.CompanyName</h2>
+
+    <div class="card">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="label">CNPJ</div>
+                <div class="value">@_parceiro.TaxId</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Clientes finais</div>
+                <div class="value">@_parceiro.EndCustomerCount</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Assinaturas ativas</div>
+                <div class="value">@_parceiro.ActiveSubscriptionsCount</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Clientes finais atendidos</div>
+
+    @if (!_clientes.Any())
+    {
+        <p style="color: var(--advanced-gray)">Nenhum cliente final encontrado para este parceiro.</p>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Empresa</th>
+                    <th>CNPJ</th>
+                    <th>Cidade/UF</th>
+                    <th>Contato</th>
+                    <th>Assinaturas ativas</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in _clientes)
+                {
+                    <tr>
+                        <td>@c.CompanyName</td>
+                        <td>@c.TaxId</td>
+                        <td>@c.City / @c.State</td>
+                        <td>@c.ContactName</td>
+                        <td>@c.ActiveSubscriptionsCount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    [Parameter] public string PartnerId { get; set; } = "";
+
+    private PartnerDto? _parceiro;
+    private List<CustomerDto> _clientes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var parceiros = await DataProvider.GetPartnersAsync();
+        _parceiro = parceiros.FirstOrDefault(p => p.Id == PartnerId);
+        _clientes = await DataProvider.GetPartnerCustomersAsync(PartnerId);
+    }
+}

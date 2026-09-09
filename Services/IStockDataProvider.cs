@@ -8,4 +8,6 @@ public interface IStockDataProvider
     Task<List<SubscriptionDto>> GetSubscriptionsAsync();
     Task<List<SubscriptionDto>> GetSubscriptionsByCustomerAsync(string customerId);
     Task<DashboardMetrics> GetDashboardMetricsAsync();
+    Task<List<PartnerDto>> GetPartnersAsync();
+    Task<List<CustomerDto>> GetPartnerCustomersAsync(string partnerId);
 }

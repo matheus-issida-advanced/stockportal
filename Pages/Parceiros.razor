@@ -1,0 +1,64 @@
+@page "/parceiros"
+@inject IStockDataProvider DataProvider
+@inject NavigationManager Nav
+
+<h2 class="section-title" style="margin-top:0">Parceiros</h2>
+
+<div style="margin-bottom: 16px;">
+    <input class="search-box" placeholder="Buscar por nome ou CNPJ..." @bind="_search" @bind:event="oninput" />
+</div>
+
+@if (_parceiros is null)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    var filtrados = _parceiros
+        .Where(p => string.IsNullOrWhiteSpace(_search)
+            || p.CompanyName.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            || p.TaxId.Contains(_search, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>CNPJ</th>
+                <th>Clientes finais</th>
+                <th>Assinaturas ativas</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in filtrados)
+            {
+                <tr @onclick="() => VerDetalhe(p.Id)">
+                    <td>@p.CompanyName</td>
+                    <td>@p.TaxId</td>
+                    <td>@p.EndCustomerCount</td>
+                    <td>@p.ActiveSubscriptionsCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (!filtrados.Any())
+    {
+        <p style="color: var(--advanced-gray); margin-top: 14px;">Nenhum parceiro encontrado.</p>
+    }
+}
+
+@code {
+    private List<PartnerDto>? _parceiros;
+    private string _search = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _parceiros = await DataProvider.GetPartnersAsync();
+    }
+
+    private void VerDetalhe(string partnerId)
+    {
+        Nav.NavigateTo($"/parceiros/{partnerId}");
+    }
+}

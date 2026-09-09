@@ -11,16 +11,28 @@ else
 {
     <div class="metric-grid">
         <div class="metric-card">
-            <div class="metric-label">Clientes ativos</div>
+            <div class="metric-label">Clientes Stock</div>
             <div class="metric-value">@_metrics.TotalClientes</div>
         </div>
         <div class="metric-card">
-            <div class="metric-label">Assinaturas ativas</div>
-            <div class="metric-value">@_metrics.TotalAssinaturasAtivas</div>
+            <div class="metric-label">Parceiros Stock</div>
+            <div class="metric-value">@_metrics.TotalRevendedores</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Clientes dos parceiros</div>
+            <div class="metric-value">@_metrics.TotalClientesDosRevendedores</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">Receita mensal estimada</div>
             <div class="metric-value">@_metrics.ReceitaMensalEstimada.ToString("C", _ptBr)</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Receita anual estimada</div>
+            <div class="metric-value">@_metrics.ReceitaAnualEstimada.ToString("C", _ptBr)</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Assinaturas ativas</div>
+            <div class="metric-value">@_metrics.TotalAssinaturasAtivas</div>
         </div>
         <div class="metric-card @(_metrics.RenovacoesProximas60Dias > 0 ? "alert" : "")">
             <div class="metric-label">Renovações em até 60 dias</div>
@@ -28,24 +40,78 @@ else
         </div>
     </div>
 
-    <div class="card">
-        <div class="section-title" style="margin-top:0">Assinaturas ativas por tipo de oferta</div>
+    <div class="dashboard-two-columns">
+        <div class="card dashboard-panel">
+            <div class="section-title" style="margin-top:0">Faturamento dos parceiros Stock</div>
 
-        @if (!_metrics.AssinaturasPorTipo.Any())
+            @if (!_metrics.FaturamentoRevendedores.Any())
+            {
+                <p style="color: var(--advanced-gray)">Nenhum parceiro com receita recorrente encontrado.</p>
+            }
+            else
+            {
+                <div class="ranking-list">
+                    @for (var i = 0; i < _metrics.FaturamentoRevendedores.Count; i++)
+                    {
+                        var item = _metrics.FaturamentoRevendedores[i];
+                        <div class="ranking-row">
+                            <div class="ranking-position">@(i + 1)</div>
+                            <div class="ranking-main">
+                                <div class="ranking-name">@item.Name</div>
+                                <div class="ranking-meta">@item.CustomerCount cliente(s) · @item.ActiveSubscriptions assinatura(s)</div>
+                            </div>
+                            <div class="ranking-value">@item.AnnualRevenue.ToString("C", _ptBr)</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="card dashboard-panel">
+            <div class="section-title" style="margin-top:0">Faturamento dos clientes Stock</div>
+
+            @if (!_metrics.FaturamentoClientes.Any())
+            {
+                <p style="color: var(--advanced-gray)">Nenhum cliente direto com receita recorrente encontrado.</p>
+            }
+            else
+            {
+                <div class="ranking-list">
+                    @for (var i = 0; i < _metrics.FaturamentoClientes.Count; i++)
+                    {
+                        var item = _metrics.FaturamentoClientes[i];
+                        <div class="ranking-row">
+                            <div class="ranking-position">@(i + 1)</div>
+                            <div class="ranking-main">
+                                <div class="ranking-name">@item.Name</div>
+                                <div class="ranking-meta">@item.ActiveSubscriptions assinatura(s) ativa(s)</div>
+                            </div>
+                            <div class="ranking-value">@item.AnnualRevenue.ToString("C", _ptBr)</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title" style="margin-top:0">Faturamento por tipo de oferta</div>
+
+        @if (!_metrics.FaturamentoPorTipo.Any())
         {
-            <p style="color: var(--advanced-gray)">Nenhuma assinatura ativa encontrada.</p>
+            <p style="color: var(--advanced-gray)">Nenhum faturamento encontrado.</p>
         }
         else
         {
-            var max = _metrics.AssinaturasPorTipo.Max(kv => kv.Value);
-            @foreach (var item in _metrics.AssinaturasPorTipo)
+            var max = _metrics.FaturamentoPorTipo.Max(kv => kv.Value);
+            @foreach (var item in _metrics.FaturamentoPorTipo)
             {
                 <div class="bar-row">
                     <div class="bar-label">@item.Key</div>
                     <div class="bar-track">
-                        <div class="bar-fill" style="width:@((item.Value * 100.0 / max).ToString("0"))%"></div>
+                        <div class="bar-fill" style="width:@((max == 0 ? 0 : item.Value * 100m / max).ToString("0"))%"></div>
                     </div>
-                    <div class="bar-count">@item.Value</div>
+                    <div class="bar-count">@item.Value.ToString("C", _ptBr)</div>
                 </div>
             }
         }
@@ -53,7 +119,7 @@ else
 
     @if (_renewalSoon.Any())
     {
-        <div class="section-title">Renovações próximas (60 dias)</div>
+        <div class="section-title">Renovações próximas - clientes diretos Stock (60 dias)</div>
         <table class="data-table">
             <thead>
                 <tr>
@@ -78,6 +144,91 @@ else
     }
 }
 
+<style>
+    .dashboard-two-columns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin: 22px 0;
+    }
+
+    .dashboard-panel {
+        margin: 0;
+        min-width: 0;
+    }
+
+    .ranking-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ranking-row {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .ranking-row:last-child {
+        border-bottom: none;
+    }
+
+    .ranking-position {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f1f3f6;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .ranking-main {
+        min-width: 0;
+    }
+
+    .ranking-name {
+        font-size: 14px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ranking-meta {
+        margin-top: 3px;
+        color: var(--advanced-gray);
+        font-size: 12px;
+    }
+
+    .ranking-value {
+        font-weight: 700;
+        white-space: nowrap;
+        font-size: 14px;
+    }
+
+    @@media (max-width: 1000px) {
+        .dashboard-two-columns {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .ranking-row {
+            grid-template-columns: 30px minmax(0, 1fr);
+        }
+
+        .ranking-value {
+            grid-column: 2;
+            margin-top: 3px;
+        }
+    }
+</style>
+
 @code {
     private DashboardMetrics? _metrics;
     private List<SubscriptionDto> _renewalSoon = new();
@@ -86,6 +237,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         _metrics = await DataProvider.GetDashboardMetricsAsync();
+
+        // A listagem detalhada abaixo continua usando as assinaturas diretas da Stock.
         var subs = await DataProvider.GetSubscriptionsAsync();
         _renewalSoon = subs.Where(s => s.IsRenewalSoon).OrderBy(s => s.EndDate).ToList();
     }
