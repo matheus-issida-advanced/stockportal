@@ -27,7 +27,7 @@ else
                 <th>CNPJ</th>
                 <th>Cidade/UF</th>
                 <th>Contato</th>
-                <th>Assinaturas ativas</th>
+                <th>Faturamento</th>
             </tr>
         </thead>
         <tbody>
@@ -38,7 +38,7 @@ else
                     <td>@c.TaxId</td>
                     <td>@c.City / @c.State</td>
                     <td>@c.ContactName</td>
-                    <td>@c.ActiveSubscriptionsCount</td>
+                    <td>@c.AnnualRevenue.ToString("C", _ptBr)</td>
                 </tr>
             }
         </tbody>
@@ -53,6 +53,7 @@ else
 @code {
     private List<CustomerDto>? _clientes;
     private string _search = "";
+    private readonly System.Globalization.CultureInfo _ptBr = new("pt-BR");
 
     protected override async Task OnInitializedAsync()
     {

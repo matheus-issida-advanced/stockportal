@@ -62,6 +62,27 @@ internal class SubscriptionRaw
     public NamedValue TermDuration { get; set; } = new();
     public NamedValue AutoRenew { get; set; } = new();
     public string? InternalId { get; set; }
+
+    // Presente quando essa subscription é um "entitlement" dentro de um Azure
+    // Plan (ex: "Azure (CSP - Advanced)" é filho de "Azure Plan"). Só as
+    // subscriptions RAIZ (sem ParentSubscriptionId) devem ser usadas para
+    // buscar o faturamento real via /azure-entitlements - ver
+    // FetchAzureEntitlementRevenueAsync.
+    public string? ParentSubscriptionId { get; set; }
+}
+
+/// <summary>
+/// Item retornado por GET /v1/customers/{customerId}/subscriptions/{id}/azure-entitlements.
+/// Diferente de Subscriptions.RevenuePrice (que vem zerado para "azureplan"),
+/// esse é o preço real do consumo Azure, já calculado pela CloudCockpit.
+/// </summary>
+internal class AzureEntitlementRaw
+{
+    public string Id { get; set; } = "";
+    public string ParentSubscriptionId { get; set; } = "";
+    public int Quantity { get; set; }
+    public Money RevenuePrice { get; set; } = new();
+    public NamedValue SubscriptionStatus { get; set; } = new();
 }
 
 internal class PagedResult<T>
@@ -151,6 +172,13 @@ public class CloudCockpitApiService : IStockDataProvider
     private static List<CustomerRaw>? _customersCache;
     private static List<SubscriptionRaw>? _subscriptionsCache;
     private static List<ResellerRaw>? _resellersCache;
+
+    // Faturamento REAL de consumo Azure, por Id da subscription RAIZ do Azure
+    // Plan (ex: "Azure Plan"). Vem de /azure-entitlements, não de
+    // Subscriptions.RevenuePrice (que vem zerado para esse tipo). Ver
+    // FetchAzureEntitlementRevenueAsync.
+    private static Dictionary<string, decimal>? _azureRevenueBySubscriptionId;
+
     private static DateTime _cacheExpiry;
     private static TimeSpan CacheDuration = TimeSpan.FromMinutes(15);
     private static readonly SemaphoreSlim LoadLock = new(1, 1);
@@ -180,17 +208,29 @@ public class CloudCockpitApiService : IStockDataProvider
 
         var directCustomerIds = GetDirectStockCustomerIds();
 
-        var activeSubscriptionsCount = _subscriptionsCache!
+        var subscriptionsByCustomer = _subscriptionsCache!
             .Where(s => directCustomerIds.Contains(s.CustomerId))
-            .GroupBy(s => s.CustomerId)
+            .GroupBy(s => s.CustomerId, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var activeSubscriptionsCount = subscriptionsByCustomer
             .ToDictionary(
                 g => g.Key,
                 g => g.Count(s => IsActive(s.SubscriptionStatus.Name)),
                 StringComparer.OrdinalIgnoreCase);
 
+        var annualRevenue = subscriptionsByCustomer
+            .ToDictionary(
+                g => g.Key,
+                g => g.Where(s => IsActive(s.SubscriptionStatus.Name)).Sum(EstimateAnnualRevenue),
+                StringComparer.OrdinalIgnoreCase);
+
         return _customersCache!
             .Where(c => directCustomerIds.Contains(c.Id))
-            .Select(c => MapCustomer(c, activeSubscriptionsCount.GetValueOrDefault(c.Id, 0)))
+            .Select(c => MapCustomer(
+                c,
+                activeSubscriptionsCount.GetValueOrDefault(c.Id, 0),
+                annualRevenue.GetValueOrDefault(c.Id, 0m)))
             .OrderBy(c => c.CompanyName)
             .ToList();
     }
@@ -246,15 +286,18 @@ public class CloudCockpitApiService : IStockDataProvider
             .Select(r => r.Id)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var endCustomerCounts = _customersCache!
+        var endCustomersByPartner = _customersCache!
             .SelectMany(c => c.CustomerAssociations
                 .Where(a => stockResellerIds.Contains(a.ResellerId ?? ""))
                 .Select(a => new { ResellerId = a.ResellerId!, CustomerId = c.Id }))
             .GroupBy(x => x.ResellerId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
                 g => g.Key,
-                g => g.Select(x => x.CustomerId).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                g => g.Select(x => x.CustomerId).Distinct(StringComparer.OrdinalIgnoreCase).ToHashSet(StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
+
+        var endCustomerCounts = endCustomersByPartner
+            .ToDictionary(kv => kv.Key, kv => kv.Value.Count, StringComparer.OrdinalIgnoreCase);
 
         var activeSubscriptionCounts = _subscriptionsCache!
             .Where(s => stockResellerIds.Contains(s.ResellerId ?? "")
@@ -263,6 +306,23 @@ public class CloudCockpitApiService : IStockDataProvider
             .GroupBy(s => s.ResellerId ?? "", StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
 
+        // Faturamento do parceiro = soma do faturamento TOTAL de cada cliente
+        // final atendido por ele (qualquer canal, incluindo Azure) - mesmo
+        // valor já mostrado em "Clientes finais atendidos". Não restringe ao
+        // canal License/ResellerId do parceiro: no canal Microsoft, a
+        // Microsoft só reconhece a Stock como revenda, então esse filtro
+        // sempre daria zero mesmo quando o parceiro genuinamente atende esse
+        // cliente no dia a dia.
+        var revenueByCustomer = _subscriptionsCache!
+            .Where(s => IsActive(s.SubscriptionStatus.Name))
+            .GroupBy(s => s.CustomerId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Sum(EstimateAnnualRevenue), StringComparer.OrdinalIgnoreCase);
+
+        var annualRevenue = endCustomersByPartner.ToDictionary(
+            kv => kv.Key,
+            kv => kv.Value.Sum(customerId => revenueByCustomer.GetValueOrDefault(customerId, 0m)),
+            StringComparer.OrdinalIgnoreCase);
+
         return stockChannelResellers
             .Select(r => new PartnerDto
             {
@@ -270,7 +330,8 @@ public class CloudCockpitApiService : IStockDataProvider
                 CompanyName = r.CompanyName.Trim(),
                 TaxId = (r.TaxId ?? r.InternalIdentifier ?? "").Trim(),
                 EndCustomerCount = endCustomerCounts.GetValueOrDefault(r.Id, 0),
-                ActiveSubscriptionsCount = activeSubscriptionCounts.GetValueOrDefault(r.Id, 0)
+                ActiveSubscriptionsCount = activeSubscriptionCounts.GetValueOrDefault(r.Id, 0),
+                AnnualRevenue = annualRevenue.GetValueOrDefault(r.Id, 0m)
             })
             .OrderBy(p => p.CompanyName)
             .ToList();
@@ -280,11 +341,11 @@ public class CloudCockpitApiService : IStockDataProvider
     /// Clientes finais atendidos por um parceiro específico (associação via
     /// CustomerAssociations com o Id do parceiro).
     ///
-    /// A contagem de assinaturas ativas é restrita ao canal License/Generic
-    /// próprio da Stock (mesmo filtro usado em GetPartnersAsync) - sem isso,
-    /// contaríamos também assinaturas Microsoft do parceiro que não têm
-    /// nenhuma relação com a parceria dele com a Stock (ex: a Digytec tem
-    /// negócio próprio de Microsoft CSP, completamente separado).
+    /// O faturamento mostrado é o TOTAL de cada cliente (qualquer canal,
+    /// incluindo Azure) - não fica restrito ao canal License/ResellerId do
+    /// parceiro, porque no canal Microsoft a Microsoft só reconhece a Stock
+    /// como revenda (nunca o parceiro), então esse filtro sempre daria zero
+    /// mesmo quando o parceiro genuinamente atende esse cliente no dia a dia.
     /// </summary>
     public async Task<List<CustomerDto>> GetPartnerCustomersAsync(string partnerId)
     {
@@ -294,16 +355,38 @@ public class CloudCockpitApiService : IStockDataProvider
             .Where(c => c.CustomerAssociations.Any(a => IdEquals(a.ResellerId, partnerId)))
             .ToList();
 
-        var activeSubscriptionsCount = _subscriptionsCache!
-            .Where(s => IdEquals(s.ResellerId, partnerId) && IdEquals(s.ProviderInstanceId, _stockProviderInstanceId))
+        var partnerCustomerIds = partnerCustomers
+            .Select(c => c.Id)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // Faturamento TOTAL do cliente (qualquer canal, incluindo Azure) - o
+        // mesmo valor que já aparece na tela principal de Clientes. Não
+        // restringe ao canal License/ResellerId do parceiro: no canal
+        // Microsoft, a Microsoft só reconhece a Stock como revenda (nunca o
+        // parceiro), então filtrar por esse canal sempre daria zero mesmo
+        // quando o parceiro genuinamente atende esse cliente no dia a dia.
+        var subscriptionsByCustomer = _subscriptionsCache!
+            .Where(s => partnerCustomerIds.Contains(s.CustomerId))
             .GroupBy(s => s.CustomerId, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var activeSubscriptionsCount = subscriptionsByCustomer
             .ToDictionary(
                 g => g.Key,
                 g => g.Count(s => IsActive(s.SubscriptionStatus.Name)),
                 StringComparer.OrdinalIgnoreCase);
 
+        var annualRevenue = subscriptionsByCustomer
+            .ToDictionary(
+                g => g.Key,
+                g => g.Where(s => IsActive(s.SubscriptionStatus.Name)).Sum(EstimateAnnualRevenue),
+                StringComparer.OrdinalIgnoreCase);
+
         return partnerCustomers
-            .Select(c => MapCustomer(c, activeSubscriptionsCount.GetValueOrDefault(c.Id, 0)))
+            .Select(c => MapCustomer(
+                c,
+                activeSubscriptionsCount.GetValueOrDefault(c.Id, 0),
+                annualRevenue.GetValueOrDefault(c.Id, 0m)))
             .OrderBy(c => c.CompanyName)
             .ToList();
     }
@@ -389,15 +472,40 @@ public class CloudCockpitApiService : IStockDataProvider
             .ThenBy(x => x.Name)
             .ToList();
 
-        var revenueByReseller = resellerActive
-            .GroupBy(s => s.ResellerId ?? "", StringComparer.OrdinalIgnoreCase)
-            .Select(g => new RevenueRankingItem
+        // Faturamento do parceiro = soma do faturamento TOTAL (qualquer
+        // canal, incluindo Azure) de cada cliente final atendido por ele -
+        // mesmo critério da tela de Parceiros. Não restringe ao canal
+        // License/ResellerId do parceiro: no canal Microsoft, a Microsoft só
+        // reconhece a Stock como revenda, então esse filtro sempre daria
+        // zero mesmo quando o parceiro genuinamente atende esse cliente.
+        var endCustomersByReseller = _customersCache!
+            .SelectMany(c => c.CustomerAssociations
+                .Where(a => stockResellerIds.Contains(a.ResellerId ?? ""))
+                .Select(a => new { ResellerId = a.ResellerId!, CustomerId = c.Id }))
+            .GroupBy(x => x.ResellerId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(x => x.CustomerId).Distinct(StringComparer.OrdinalIgnoreCase).ToHashSet(StringComparer.OrdinalIgnoreCase),
+                StringComparer.OrdinalIgnoreCase);
+
+        var revenueByCustomerAllChannels = _subscriptionsCache!
+            .Where(s => IsActive(s.SubscriptionStatus.Name))
+            .GroupBy(s => s.CustomerId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Sum(EstimateAnnualRevenue), StringComparer.OrdinalIgnoreCase);
+
+        var subscriptionCountByCustomer = _subscriptionsCache!
+            .Where(s => IsActive(s.SubscriptionStatus.Name))
+            .GroupBy(s => s.CustomerId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
+        var revenueByReseller = endCustomersByReseller
+            .Select(kv => new RevenueRankingItem
             {
-                Id = g.Key,
-                Name = resellerNames.GetValueOrDefault(g.Key, "(parceiro desconhecido)"),
-                AnnualRevenue = g.Sum(EstimateAnnualRevenue),
-                ActiveSubscriptions = g.Count(),
-                CustomerCount = g.Select(s => s.CustomerId).Distinct(StringComparer.OrdinalIgnoreCase).Count()
+                Id = kv.Key,
+                Name = resellerNames.GetValueOrDefault(kv.Key, "(parceiro desconhecido)"),
+                AnnualRevenue = kv.Value.Sum(customerId => revenueByCustomerAllChannels.GetValueOrDefault(customerId, 0m)),
+                ActiveSubscriptions = kv.Value.Sum(customerId => subscriptionCountByCustomer.GetValueOrDefault(customerId, 0)),
+                CustomerCount = kv.Value.Count
             })
             .OrderByDescending(x => x.AnnualRevenue)
             .ThenBy(x => x.Name)
@@ -463,8 +571,17 @@ public class CloudCockpitApiService : IStockDataProvider
     /// "Monthly" têm RevenuePrice batendo com o valor ANUAL, não mensal -
     /// dividir por 12 aqui reproduz a parcela mensal real mostrada na tela.
     /// </summary>
+    /// <summary>
+    /// Para "azureplan" (consumo Azure), RevenuePrice sempre vem zerado -
+    /// o valor real vem de /azure-entitlements (ver
+    /// FetchAzureEntitlementRevenueAsync) e já representa a cobrança mensal de
+    /// verdade (não um "valor de termo" a dividir por 12, como as licenças).
+    /// </summary>
     private static decimal EstimateMonthlyRevenue(SubscriptionRaw s)
     {
+        if (string.Equals(s.OfferType.Name, "azureplan", StringComparison.OrdinalIgnoreCase))
+            return _azureRevenueBySubscriptionId?.GetValueOrDefault(s.Id, 0m) ?? 0m;
+
         var frequency = (s.BillingFrequency.Name ?? "").Trim().ToLowerInvariant();
         var baseValue = s.RevenuePrice.Value * Math.Max(s.Quantity, 1);
 
@@ -492,9 +609,13 @@ public class CloudCockpitApiService : IStockDataProvider
     /// annual    -> valor * quantidade
     /// triennial -> valor * quantidade / 3 (termo de 3 anos, equivalente anual)
     /// onetime   -> valor * quantidade (sem dividir - é pagamento único, sem termo)
+    /// azureplan -> faturamento real mensal (via /azure-entitlements) * 12 (projeção)
     /// </summary>
     private static decimal EstimateAnnualRevenue(SubscriptionRaw s)
     {
+        if (string.Equals(s.OfferType.Name, "azureplan", StringComparison.OrdinalIgnoreCase))
+            return (_azureRevenueBySubscriptionId?.GetValueOrDefault(s.Id, 0m) ?? 0m) * 12m;
+
         var frequency = (s.BillingFrequency.Name ?? "").Trim().ToLowerInvariant();
         var baseValue = s.RevenuePrice.Value * Math.Max(s.Quantity, 1);
 
@@ -530,6 +651,7 @@ public class CloudCockpitApiService : IStockDataProvider
         if (_customersCache != null &&
             _subscriptionsCache != null &&
             _resellersCache != null &&
+            _azureRevenueBySubscriptionId != null &&
             _cacheExpiry > DateTime.UtcNow)
             return;
 
@@ -542,6 +664,7 @@ public class CloudCockpitApiService : IStockDataProvider
             if (_customersCache != null &&
                 _subscriptionsCache != null &&
                 _resellersCache != null &&
+                _azureRevenueBySubscriptionId != null &&
                 _cacheExpiry > DateTime.UtcNow)
                 return;
 
@@ -553,12 +676,75 @@ public class CloudCockpitApiService : IStockDataProvider
             _subscriptionsCache = await FetchAllPagesAsync<SubscriptionRaw>("subscriptions", token);
             _resellersCache = await FetchAllPagesAsync<ResellerRaw>("resellers", token);
 
+            _azureRevenueBySubscriptionId = await FetchAzureEntitlementRevenueAsync(_subscriptionsCache, token);
+
             _cacheExpiry = DateTime.UtcNow.Add(CacheDuration);
         }
         finally
         {
             LoadLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Busca o faturamento REAL de consumo Azure para cada subscription raiz
+    /// do tipo "azureplan" ativa (ex: "Azure Plan"). Subscriptions.RevenuePrice
+    /// vem zerado para esse tipo - o valor real só existe em
+    /// /v1/customers/{customerId}/subscriptions/{id}/azure-entitlements.
+    ///
+    /// Só chama esse endpoint para subscriptions SEM ParentSubscriptionId -
+    /// "entitlements" (ex: "Azure (CSP - Advanced)") já aparecem como filhos
+    /// dentro da resposta da raiz, então não precisam de chamada própria.
+    /// </summary>
+    private async Task<Dictionary<string, decimal>> FetchAzureEntitlementRevenueAsync(
+        List<SubscriptionRaw> subscriptions, string token)
+    {
+        var result = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+
+        var azurePlanRoots = subscriptions
+            .Where(s => string.Equals(s.OfferType.Name, "azureplan", StringComparison.OrdinalIgnoreCase)
+                     && string.IsNullOrWhiteSpace(s.ParentSubscriptionId)
+                     && IsActive(s.SubscriptionStatus.Name))
+            .ToList();
+
+        foreach (var root in azurePlanRoots)
+        {
+            if (string.IsNullOrWhiteSpace(root.ResellerId))
+                continue;
+
+            var url = $"https://api.cloudcockpit.com/v1/customers/{root.CustomerId}/subscriptions/{root.Id}/azure-entitlements?resellerId={root.ResellerId}";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("X-Tenant", _config["CloudCockpit:TenantDomain"]);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            try
+            {
+                var response = await _http.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(
+                        "azure-entitlements para subscription {SubscriptionId} retornou {StatusCode}",
+                        root.Id, (int)response.StatusCode);
+                    continue;
+                }
+
+                var entitlements = await response.Content.ReadFromJsonAsync<List<AzureEntitlementRaw>>();
+                if (entitlements == null)
+                    continue;
+
+                var revenue = entitlements
+                    .Where(e => IsActive(e.SubscriptionStatus.Name))
+                    .Sum(e => e.RevenuePrice.Value * Math.Max(e.Quantity, 1));
+
+                result[root.Id] = revenue;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Falha ao buscar azure-entitlements para subscription {SubscriptionId}", root.Id);
+            }
+        }
+
+        return result;
     }
 
     private async Task<List<T>> FetchAllPagesAsync<T>(string resource, string token)
@@ -850,7 +1036,7 @@ public class CloudCockpitApiService : IStockDataProvider
 
     // --- Mapeamento bruto -> DTO público ---
 
-    private static CustomerDto MapCustomer(CustomerRaw c, int activeSubs) => new()
+    private static CustomerDto MapCustomer(CustomerRaw c, int activeSubs, decimal annualRevenue = 0m) => new()
     {
         Id = c.Id,
         CompanyName = c.CompanyName.Trim(),
@@ -860,7 +1046,8 @@ public class CloudCockpitApiService : IStockDataProvider
         ContactName = $"{c.FirstName} {c.LastName}".Trim(),
         ContactEmail = c.Email ?? "",
         ContactPhone = c.Phone ?? "",
-        ActiveSubscriptionsCount = activeSubs
+        ActiveSubscriptionsCount = activeSubs,
+        AnnualRevenue = annualRevenue
     };
 
     private static SubscriptionDto MapSubscription(SubscriptionRaw s, string customerName) => new()

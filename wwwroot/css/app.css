@@ -274,6 +274,10 @@ table.data-table tbody tr:hover {
   margin-bottom: 10px;
 }
 
+.info-item {
+  min-width: 0;
+}
+
 .info-item .label {
   font-size: 0.78rem;
   color: var(--advanced-gray);
@@ -284,4 +288,6 @@ table.data-table tbody tr:hover {
   font-size: 0.95rem;
   font-weight: 600;
   margin-top: 2px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

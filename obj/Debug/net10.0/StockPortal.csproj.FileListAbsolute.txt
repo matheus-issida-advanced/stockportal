@@ -31,4 +31,4 @@ C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\
 C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\net10.0\StockPortal.pdb
 C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\net10.0\StockPortal.genruntimeconfig.cache
 C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\net10.0\ref\StockPortal.dll
-C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\net10.0\compressed\jrzeytvbu3-{0}-n51i5bf2yg-n51i5bf2yg.gz
+C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\net10.0\compressed\jrzeytvbu3-{0}-pa135dpgpa-pa135dpgpa.gz

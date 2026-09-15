@@ -55,7 +55,16 @@ else
                     </td>
                     <td>@s.Quantity</td>
                     <td>@(s.EndDate.Year < 9000 ? s.EndDate.ToString("dd/MM/yyyy") : "sem vencimento")</td>
-                    <td>@s.RevenuePrice.Value.ToString("C", _ptBr)</td>
+                    <td>
+                        @if (string.Equals(s.OfferType, "azureplan", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span>Usage-based</span>
+                        }
+                        else
+                        {
+                            <span>@s.RevenuePrice.Value.ToString("C", _ptBr)</span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

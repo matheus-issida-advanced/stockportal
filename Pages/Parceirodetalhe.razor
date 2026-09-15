@@ -22,8 +22,8 @@ else
                 <div class="value">@_parceiro.EndCustomerCount</div>
             </div>
             <div class="info-item">
-                <div class="label">Assinaturas ativas</div>
-                <div class="value">@_parceiro.ActiveSubscriptionsCount</div>
+                <div class="label">Faturamento</div>
+                <div class="value">@_parceiro.AnnualRevenue.ToString("C", _ptBr)</div>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@ else
                     <th>CNPJ</th>
                     <th>Cidade/UF</th>
                     <th>Contato</th>
-                    <th>Assinaturas ativas</th>
+                    <th>Faturamento</th>
                 </tr>
             </thead>
             <tbody>
@@ -54,7 +54,7 @@ else
                         <td>@c.TaxId</td>
                         <td>@c.City / @c.State</td>
                         <td>@c.ContactName</td>
-                        <td>@c.ActiveSubscriptionsCount</td>
+                        <td>@c.AnnualRevenue.ToString("C", _ptBr)</td>
                     </tr>
                 }
             </tbody>
@@ -67,6 +67,7 @@ else
 
     private PartnerDto? _parceiro;
     private List<CustomerDto> _clientes = new();
+    private readonly System.Globalization.CultureInfo _ptBr = new("pt-BR");
 
     protected override async Task OnInitializedAsync()
     {

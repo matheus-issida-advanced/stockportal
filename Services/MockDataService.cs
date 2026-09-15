@@ -54,8 +54,33 @@ public class MockDataService : IStockDataProvider
         new() { Id = "s7", CustomerId = "r-c3", ResellerId = MspId, CustomerName = AllCustomerNames["r-c3"], SubscriptionName = "Microsoft 365 Business Basic", OfferType = "license", Status = "active", Quantity = 18, StartDate = new DateTime(2026, 1, 1), EndDate = new DateTime(2027, 1, 1), BillingFrequency = "annual", TermDuration = "oneyear", RevenuePrice = new Money { Value = 420m } }
     };
 
-    public Task<List<CustomerDto>> GetCustomersAsync() =>
-        Task.FromResult(DirectCustomers.OrderBy(c => c.CompanyName).ToList());
+    public Task<List<CustomerDto>> GetCustomersAsync()
+    {
+        var result = DirectCustomers
+            .Select(c => new CustomerDto
+            {
+                Id = c.Id,
+                CompanyName = c.CompanyName,
+                TaxId = c.TaxId,
+                City = c.City,
+                State = c.State,
+                ContactName = c.ContactName,
+                ContactEmail = c.ContactEmail,
+                ContactPhone = c.ContactPhone,
+                AgreementStatus = c.AgreementStatus,
+                ActiveSubscriptionsCount = AllSubscriptions.Count(s =>
+                    s.CustomerId == c.Id && s.ResellerId == StockId &&
+                    s.Status.Equals("active", StringComparison.OrdinalIgnoreCase)),
+                AnnualRevenue = AllSubscriptions
+                    .Where(s => s.CustomerId == c.Id && s.ResellerId == StockId &&
+                                s.Status.Equals("active", StringComparison.OrdinalIgnoreCase))
+                    .Sum(EstimateAnnualRevenue)
+            })
+            .OrderBy(c => c.CompanyName)
+            .ToList();
+
+        return Task.FromResult(result);
+    }
 
     public Task<List<SubscriptionDto>> GetSubscriptionsAsync() =>
         Task.FromResult(AllSubscriptions.Where(s => s.ResellerId == StockId).ToList());
@@ -78,7 +103,8 @@ public class MockDataService : IStockDataProvider
                 CompanyName = kv.Value,
                 TaxId = "",
                 EndCustomerCount = reseller.Where(s => s.ResellerId == kv.Key).Select(s => s.CustomerId).Distinct().Count(),
-                ActiveSubscriptionsCount = reseller.Count(s => s.ResellerId == kv.Key)
+                ActiveSubscriptionsCount = reseller.Count(s => s.ResellerId == kv.Key),
+                AnnualRevenue = reseller.Where(s => s.ResellerId == kv.Key).Sum(EstimateAnnualRevenue)
             })
             .OrderBy(p => p.CompanyName)
             .ToList();
@@ -98,7 +124,11 @@ public class MockDataService : IStockDataProvider
                 CompanyName = AllCustomerNames.GetValueOrDefault(id, id),
                 ActiveSubscriptionsCount = AllSubscriptions.Count(s =>
                     s.CustomerId == id && s.ResellerId == partnerId &&
-                    s.Status.Equals("active", StringComparison.OrdinalIgnoreCase))
+                    s.Status.Equals("active", StringComparison.OrdinalIgnoreCase)),
+                AnnualRevenue = AllSubscriptions
+                    .Where(s => s.CustomerId == id && s.ResellerId == partnerId &&
+                                s.Status.Equals("active", StringComparison.OrdinalIgnoreCase))
+                    .Sum(EstimateAnnualRevenue)
             })
             .OrderBy(c => c.CompanyName)
             .ToList();
@@ -160,10 +190,14 @@ public class MockDataService : IStockDataProvider
 
     private static decimal EstimateMonthlyRevenue(SubscriptionDto s)
     {
-        if (!s.BillingFrequency.Equals("monthly", StringComparison.OrdinalIgnoreCase))
-            return 0m;
-
-        return s.RevenuePrice.Value * Math.Max(s.Quantity, 1);
+        var baseValue = s.RevenuePrice.Value * Math.Max(s.Quantity, 1);
+        return s.BillingFrequency.Trim().ToLowerInvariant() switch
+        {
+            "monthly" => baseValue / 12m,
+            "annual" => baseValue / 12m,
+            "triennial" => baseValue / 36m,
+            _ => 0m
+        };
     }
 
     private static decimal EstimateAnnualRevenue(SubscriptionDto s)
@@ -171,9 +205,10 @@ public class MockDataService : IStockDataProvider
         var baseValue = s.RevenuePrice.Value * Math.Max(s.Quantity, 1);
         return s.BillingFrequency.Trim().ToLowerInvariant() switch
         {
-            "monthly" => baseValue * 12m,
+            "monthly" => baseValue,
             "annual" => baseValue,
             "triennial" => baseValue / 3m,
+            "onetime" => baseValue,
             _ => 0m
         };
     }

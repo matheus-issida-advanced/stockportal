@@ -1,4 +1,3 @@
-
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -64,6 +63,7 @@ public class CustomerDto
     public string ContactPhone { get; set; } = "";
     public string AgreementStatus { get; set; } = "";
     public int ActiveSubscriptionsCount { get; set; }
+    public decimal AnnualRevenue { get; set; }
 }
 
 public class PartnerDto
@@ -73,6 +73,7 @@ public class PartnerDto
     public string TaxId { get; set; } = "";
     public int EndCustomerCount { get; set; }
     public int ActiveSubscriptionsCount { get; set; }
+    public decimal AnnualRevenue { get; set; }
 }
 
 public class SubscriptionDto
