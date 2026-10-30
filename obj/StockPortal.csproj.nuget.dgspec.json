@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj": {}
+    "C:\\Users\\matheus.issida\\OneDrive - Advanced Informatica Ltda\\Documentos\\GitHub\\stockportal\\StockPortal.csproj": {}
   },
   "projects": {
-    "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj": {
+    "C:\\Users\\matheus.issida\\OneDrive - Advanced Informatica Ltda\\Documentos\\GitHub\\stockportal\\StockPortal.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj",
+        "projectUniqueName": "C:\\Users\\matheus.issida\\OneDrive - Advanced Informatica Ltda\\Documentos\\GitHub\\stockportal\\StockPortal.csproj",
         "projectName": "StockPortal",
-        "projectPath": "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj",
+        "projectPath": "C:\\Users\\matheus.issida\\OneDrive - Advanced Informatica Ltda\\Documentos\\GitHub\\stockportal\\StockPortal.csproj",
         "packagesPath": "C:\\Users\\matheus.issida\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\obj\\",
+        "outputPath": "C:\\Users\\matheus.issida\\OneDrive - Advanced Informatica Ltda\\Documentos\\GitHub\\stockportal\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\matheus.issida\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\matheus.issida\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

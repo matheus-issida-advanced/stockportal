@@ -32,3 +32,37 @@ C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\
 C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\net10.0\StockPortal.genruntimeconfig.cache
 C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\net10.0\ref\StockPortal.dll
 C:\Users\matheus.issida\Documents\GitHub\Plugins Advanced\stockportal\obj\Debug\net10.0\compressed\jrzeytvbu3-{0}-pa135dpgpa-pa135dpgpa.gz
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\bin\Debug\net10.0\appsettings.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\bin\Debug\net10.0\StockPortal.staticwebassets.runtime.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\bin\Debug\net10.0\StockPortal.staticwebassets.endpoints.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\bin\Debug\net10.0\StockPortal.exe
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\bin\Debug\net10.0\StockPortal.deps.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\bin\Debug\net10.0\StockPortal.runtimeconfig.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\bin\Debug\net10.0\StockPortal.dll
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\bin\Debug\net10.0\StockPortal.pdb
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\EmbeddedAttribute.cs
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\ValidatableTypeAttribute.cs
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.AssemblyInfoInputs.cache
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.AssemblyInfo.cs
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.csproj.CoreCompileInputs.cache
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.sourcelink.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\rjimswa.dswa.cache.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\scopedcss\bundle\StockPortal.styles.css
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\compressed\jrzeytvbu3-{0}-pa135dpgpa-pa135dpgpa.gz
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\compressed\pwzcjv6uo9-{0}-wyu7y4jcvb-wyu7y4jcvb.gz
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\compressed\quxtkbwhqo-{0}-wfr2hj6447-wfr2hj6447.gz
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\staticwebassets.build.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\staticwebassets.build.json.cache
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\staticwebassets.development.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\staticwebassets.build.endpoints.json
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\swae.build.ex.cache
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.dll
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\refint\StockPortal.dll
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.pdb
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\StockPortal.genruntimeconfig.cache
+C:\Users\matheus.issida\OneDrive - Advanced Informatica Ltda\Documentos\GitHub\stockportal\obj\Debug\net10.0\ref\StockPortal.dll

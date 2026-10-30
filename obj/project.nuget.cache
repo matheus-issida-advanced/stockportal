@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "gLDnOMI83Tk=",
+  "dgSpecHash": "2Zq6odVYn/o=",
   "success": true,
-  "projectFilePath": "C:\\Users\\matheus.issida\\Documents\\GitHub\\Plugins Advanced\\stockportal\\StockPortal.csproj",
+  "projectFilePath": "C:\\Users\\matheus.issida\\OneDrive - Advanced Informatica Ltda\\Documentos\\GitHub\\stockportal\\StockPortal.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\matheus.issida\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.11\\microsoft.aspnetcore.app.internal.assets.10.0.11.nupkg.sha512"
   ],

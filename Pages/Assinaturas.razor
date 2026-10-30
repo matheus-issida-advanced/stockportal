@@ -33,6 +33,7 @@ else
                 <th>Cliente</th>
                 <th>Assinatura</th>
                 <th>Tipo</th>
+                <th>Contrato</th>
                 <th>Status</th>
                 <th>Qtd.</th>
                 <th>Vencimento</th>
@@ -46,6 +47,7 @@ else
                     <td>@s.CustomerName</td>
                     <td>@s.SubscriptionName</td>
                     <td>@s.OfferType</td>
+                    <td title="@ContractLabel.Long(s.OfferType, s.TermDuration, s.BillingFrequency)">@ContractLabel.Short(s.OfferType, s.TermDuration, s.BillingFrequency)</td>
                     <td>
                         <span class="badge @StatusBadgeClass(s.Status)">@s.Status</span>
                         @if (s.IsRenewalSoon)
@@ -72,6 +74,10 @@ else
 
     <p style="color: var(--advanced-gray); margin-top: 12px; font-size: 0.85rem;">
         @filtradas.Count de @_subscriptions.Count assinaturas
+    </p>
+
+    <p style="color: var(--advanced-gray); font-size: 0.85rem;">
+        Contrato = prazo/cobrança. Ex.: Anual/Mensal é um contrato de 1 ano cobrado mensalmente; Anual/Anual, de 1 ano cobrado uma vez ao ano; Trienal/Anual, de 3 anos com cobrança anual.
     </p>
 }
 
